@@ -1,11 +1,14 @@
 package com.mehmetsukrukavak.spring_boot_rest.config;
 
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -32,51 +35,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-//        Customizer<CsrfConfigurer<HttpSecurity>> custCsrf = new Customizer<CsrfConfigurer<HttpSecurity>>() {
-//            @Override
-//            public void customize(CsrfConfigurer<HttpSecurity> configurer) {
-//                configurer.disable();
-//            }
-//        };
-//
-//       http.csrf(custCsrf);
-//        Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> custHttp = new Customizer<AuthorizeHttpRequestsConfigurer<org.springframework.security.config.annotation.web.builders.HttpSecurity>.AuthorizationManagerRequestMatcherRegistry>() {
-//            @Override
-//            public void customize(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
-//                registry.anyRequest().authenticated();
-//            }
-//        };
-//
-//        http.authorizeHttpRequests(custHttp);
-
         http
                 .csrf(customizer -> customizer.disable())
-                .authorizeHttpRequests(request -> request.anyRequest().authenticated())
-                //.formLogin(Customizer.withDefaults())
-                .httpBasic(Customizer.withDefaults())
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/user/register", "/user/login", "/user/logout")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
 
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//
-//        UserDetails user = User
-//                .withDefaultPasswordEncoder()
-//                .username("msk")
-//                .password("msk@1234")
-//                .roles("USER")
-//                .build();
-//
-//        UserDetails admin = User
-//                .withDefaultPasswordEncoder()
-//                .username("admin")
-//                .password("admin@789")
-//                .roles("ADMIN")
-//                .build();
-//
-//        return new InMemoryUserDetailsManager(user, admin);
-//    }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 }
