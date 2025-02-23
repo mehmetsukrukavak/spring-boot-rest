@@ -1,6 +1,7 @@
 package com.mehmetsukrukavak.spring_boot_rest.controller;
 
 import com.mehmetsukrukavak.spring_boot_rest.model.User;
+import com.mehmetsukrukavak.spring_boot_rest.service.JwtService;
 import com.mehmetsukrukavak.spring_boot_rest.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class UserController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    JwtService jwtService;
     @PostMapping("/register")
     public User register(@RequestBody User user) {
         return userService.saveUser(user);
@@ -32,7 +36,7 @@ public class UserController {
     public String login(@RequestBody User user) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword()));
 
-        if (authentication.isAuthenticated()) return "Successfully logged in";
+        if (authentication.isAuthenticated()) return jwtService.generateToken(user.getUsername());
 
         return "Invalid username or password";
     }
